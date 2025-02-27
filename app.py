@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from openai import OpenAI, AzureOpenAI
+from openai import AuthenticationError, NotFoundError
 from dotenv import load_dotenv
 import os
 
@@ -60,10 +61,15 @@ def api():
     chat_history.append(system_roles[function_index])
 
     # Send the entire chat history to OpenAI's API and receive the response
-    completion = client.chat.completions.create(
-        messages=chat_history,
-        model=models[function_index] # Use the corresponding model for each function
-    )
+    try:
+        completion = client.chat.completions.create(
+            messages=chat_history,
+            model=models[function_index] # Use the corresponding model for each function
+        )
+    except AuthenticationError:
+        return jsonify({"response": "Authentication Error! Make sure your API key is correct."}), 401
+    except NotFoundError as e:
+        return jsonify({"response": "Internal Server Error! Report this message to the administrator."}, str(e)), 500
 
     if completion.choices and completion.choices[0].message:
         bot_response = completion.choices[0].message.content
