@@ -8,17 +8,29 @@ A ChatGPT clone that is specilized in text comprehension. Written with Flask and
 - [OpenAI Python API Library](https://pypi.org/project/openai/)
 - [OpenAI API keys](https://platform.openai.com/api-keys)
 
-## General installation
+## General Installation
 ```
 git clone https://github.com/Peter-YeungPW/ChatGPT-Text-Comprehensor.git
 ```
-Add your OpenAI API Key into .env.sample and remove the .sample file extension
 
-## Library nstallation
+## Library Installation
 ```
-pip install flask
-pip install dotenv
-pip install openai
+pip install flask dotenv openai
+```
+
+# Setting Credentials
+
+Create .env file with the following content:
+
+```
+API_KEY=<your-api-key>
+```
+
+If you want to use Azure OpenAI API, also specify the following in the .env file.
+
+```
+AZURE_ENDPOINT=<azure-endpoint-url>
+API_VERSION=<azure-endpoint-api-version>
 ```
 
 ## Author

@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
-import openai
+from openai import OpenAI, AzureOpenAI
+from openai import AuthenticationError, NotFoundError
 from dotenv import load_dotenv
 import os
 
@@ -9,7 +10,23 @@ app = Flask(__name__)
 
 # Set up OpenAI API credentials, DOTENV is used
 # Include your api key inside a .env file with API_KEY=YOURAPIKEY 
-openai.api_key = os.getenv('API_KEY')
+if (api_key := os.getenv('API_KEY')) is None:
+    raise KeyError('No API key provided!')
+
+# Optionally accept Azure OpenAI API
+if (azure_endpoint := os.getenv('AZURE_ENDPOINT')) is not None:
+    if (api_version := os.getenv('API_VERSION')) is None:
+        raise KeyError('Specify API Version when using Azure OpenAI API!')
+    
+    client = AzureOpenAI(
+        api_key=api_key,
+        api_version=api_version,
+        azure_endpoint=azure_endpoint
+        )
+
+else:
+    client = OpenAI(api_key=api_key)
+    
 
 # Define the default route to return the index.html file
 @app.route("/")
@@ -44,10 +61,15 @@ def api():
     chat_history.append({"role": "user", "content": message})
 
     # Send the entire chat history to OpenAI's API and receive the response
-    completion = openai.chat.completions.create(
-        messages=chat_history,
-        model=models[function_index] # Use the corresponding model for each function
-    )
+    try:
+        completion = client.chat.completions.create(
+            messages=chat_history,
+            model=models[function_index] # Use the corresponding model for each function
+        )
+    except AuthenticationError:
+        return jsonify({"response": "Authentication Error! Make sure your API key is correct."}), 401
+    except NotFoundError as e:
+        return jsonify({"response": "Internal Server Error! Report this message to the administrator."}, str(e)), 500
 
     if completion.choices and completion.choices[0].message:
         bot_response = completion.choices[0].message.content
