@@ -18,7 +18,7 @@ git clone https://github.com/Peter-YeungPW/ChatGPT-Text-Comprehensor.git
 pip install flask dotenv openai
 ```
 
-# Setting Credentials
+## Setting Credentials
 
 Create .env file with the following content:
 
