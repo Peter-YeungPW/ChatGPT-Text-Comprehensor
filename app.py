@@ -40,9 +40,6 @@ def api():
     message = request.json.get("message")
     chat_history = request.json.get("chat_history",[])
     function_index = request.json.get("function_index", 0)
-
-    # Append the new user message to the chat history
-    chat_history.append({"role": "user", "content": message})
     
     # Define system roles and models based on the function index
     system_roles = [
@@ -52,13 +49,16 @@ def api():
     ]
 
     models = [
-        "gpt-3.5-turbo",  # Model for keyword extraction
-        "gpt-3.5-turbo",  # Model for text summarization
-        "gpt-3.5-turbo"   # Model for topic classification
+        "gpt-4o-mini",  # Model for keyword extraction
+        "gpt-o1",  # Model for text summarization
+        "gpt-4o"   # Model for topic classification
     ]
 
     # Add the system role to the chat history based on the selected function
     chat_history.append(system_roles[function_index])
+
+    # Append the new user message to the chat history
+    chat_history.append({"role": "user", "content": message})
 
     # Send the entire chat history to OpenAI's API and receive the response
     try:
