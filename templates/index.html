@@ -23,20 +23,22 @@
       <!-- Chat messages to be added here -->
     </div>
     <div class="form-group mt-3" id="chat-box">
-      <textarea class="form-control" rows="3" placeholder="Type your message here" id="message-input" style="background-color: #5ced73; border: #5ced73; color: black"></textarea>
+      <textarea class="form-control" rows="3" placeholder="Type your message here" id="message-input"
+        style="background-color: #5ced73; border: #5ced73; color: black"></textarea>
     </div>
-    <button type="button" class="btn btn-primary" id="send-btn" style="background-color: #5ced73; border: #5ced73; color: black">Send</button>
+    <button type="button" class="btn btn-primary" id="send-btn"
+      style="background-color: #5ced73; border: #5ced73; color: black">Send</button>
     <div class="switch">
       <div class="switch-container" id="switch-container">
-          <div class="switch-button" id="switch-button"></div>
-          <div class="option" onclick="setFunction(0)">Keyword Extraction</div>
-          <div class="option" onclick="setFunction(1)">Text Summarization</div>
-          <div class="option" onclick="setFunction(2)">Topic Classification</div>
+        <div class="switch-button" id="switch-button"></div>
+        <div class="option" onclick="setFunction(0)">Keyword Extraction</div>
+        <div class="option" onclick="setFunction(1)">Text Summarization</div>
+        <div class="option" onclick="setFunction(2)">Topic Classification</div>
       </div>
     </div>
   </div>
   <script>
-    setInterval(highlightAll,1000);
+    setInterval(highlightAll, 1000);
     // Function to highlight code using highlight.js library
     function highlightAll() {
       document.querySelectorAll("pre code").forEach(block => {
@@ -47,11 +49,11 @@
     let currentFunctionIndex = 0; // Default to Function 0
 
     function setFunction(index) {
-        currentFunctionIndex = index;
-        const switchButton = document.getElementById("switch-button");
-        switchButton.style.left = `${index * 33.33}%`;
-        // Update the function based on the selected index
-        const functions = ["Keyword Extraction", "Text Summarization", "Topic Classification"];
+      currentFunctionIndex = index;
+      const switchButton = document.getElementById("switch-button");
+      switchButton.style.left = `${index * 33.33}%`;
+      // Update the function based on the selected index
+      const functions = ["Keyword Extraction", "Text Summarization", "Topic Classification"];
     }
 
     const chatBox = document.querySelector(".chat-box");
@@ -70,9 +72,7 @@
         messageDiv.classList.add("bot-message");
       }
 
-      messageDiv.innerHTML = `
-        <img src="{{ url_for('static', filename='images/user.png') }}" class="user-icon"><p>${message}</p>
-        `;
+      messageDiv.innerHTML = `<img src="{{ url_for('static', filename='images/user.png') }}" class="user-icon" ><p>${message}</p>`;
 
       chatBox.appendChild(messageDiv);
       chatBox.scrollTop = chatBox.scrollHeight;
@@ -101,22 +101,34 @@
         })
           .then(response => response.json())
           .then(data => {
-                console.log("API Response:", data);
-                messageInput.value = "";
-                const botMessage = data.response; // Get the bot message from the response
-                chatHistory.push({ role: "assistant", content: botMessage }); // Add bot response to chat history
+            console.log("API Response:", data);
+            messageInput.value = "";
+            const botMessage = data.response; // Get the bot message from the response
+            chatHistory.push({ role: "assistant", content: botMessage }); // Add bot response to chat history
 
-                // Create a new message div for the bot response
-                const messageDiv = document.createElement("div");
-                messageDiv.classList.add("mt-3", "p-3", "rounded", "bot-message");
-                chatBox.appendChild(messageDiv);
-                chatBox.scrollTop = chatBox.scrollHeight;
-            })
+            // Create a new message div for the bot response
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("mt-3", "p-3", "rounded", "bot-message");
+
+            // Check if the content has code block
+            const hasCodeBlock = botMessage.includes("```");
+            if (hasCodeBlock) {
+              // If the content has code block, wrap it in a <pre><code> element
+              const codeContent = botMessage.replace(/```([\s\S]+?)```/g, '</p><pre><code>$1</code></pre><p>');
+              messageDiv.innerHTML = `<img src="{{ url_for('static', filename='images/gpt.jpg') }}" class="bot-icon"><p>${codeContent}</p>`;
+            } else {
+              messageDiv.innerHTML = `<img src="{{ url_for('static', filename='images/gpt.jpg') }}" class="bot-icon"><p>${botMessage}</p>`;
+            }
+
+
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+          })
           .catch(error => console.error(error));
       }
     }
 
-    
+
     sendBtn.addEventListener("click", sendMessage);
     messageInput.addEventListener("keydown", event => {
       if (event.keyCode === 13 && !event.shiftKey) {
